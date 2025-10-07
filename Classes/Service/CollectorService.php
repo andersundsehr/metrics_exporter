@@ -4,21 +4,17 @@ declare(strict_types=1);
 
 namespace AUS\MetricsExporter\Service;
 
-use AUS\MetricsExporter\Factory\PdoFactory;
-use AUS\MetricsExporter\Storage\PDO;
+use AUS\MetricsExporter\Storage\ImmutableCachingFrameworkStorage;
 use Prometheus\CollectorRegistry;
 use TYPO3\CMS\Core\SingletonInterface;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class CollectorService implements SingletonInterface
 {
     private readonly CollectorRegistry $registry;
 
-    public function __construct(private readonly PdoFactory $pdoFactory)
+    public function __construct(ImmutableCachingFrameworkStorage $cachingFrameworkStorage)
     {
-        $pdo = $this->pdoFactory->create();
-        $pdoStorage = GeneralUtility::makeInstance(PDO::class, $pdo);
-        $this->registry = new CollectorRegistry($pdoStorage);
+        $this->registry = new CollectorRegistry($cachingFrameworkStorage);
     }
 
     public function getRegistry(): CollectorRegistry

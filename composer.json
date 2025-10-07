@@ -1,11 +1,10 @@
 {
   "name": "andersundsehr/metrics_exporter",
   "description": "Prometheus metrics collector for TYPO3. Collect and export metrics.",
-  "license": "GPL-2.0-or-later",
+  "license": "GPL-3.0-or-later",
   "type": "typo3-cms-extension",
   "require": {
     "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
-    "ext-pdo": "*",
     "promphp/prometheus_client_php": "^2.14.1",
     "typo3/cms-core": "^11.5 || ^12.4 || ^13.4"
   },
@@ -13,7 +12,11 @@
     "pluswerk/grumphp-config": "*",
     "saschaegerer/phpstan-typo3": "*",
     "ssch/typo3-rector": "^2.5.0",
-    "typo3/testing-framework": "*"
+    "typo3/testing-framework": "*",
+    "weakbit/fallback-cache": "dev-feature/TYPO3v13"
+  },
+  "suggest": {
+    "weakbit/fallback-cache": "Ensures metrics collector doesn't break pages if caching fails and enables immutable caching for metrics"
   },
   "autoload": {
     "psr-4": {
