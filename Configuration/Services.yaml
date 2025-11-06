@@ -10,9 +10,9 @@ services:
   AUS\MetricsExporter\Service\CollectorService:
     public: true
 
-  AUS\MetricsExporter\EventListener\AlterTableDefinitionStatementsEventListener:
+  cache.prometheus_storage:
+    class: TYPO3\CMS\Core\Cache\Frontend\FrontendInterface
+    factory: [ '@TYPO3\CMS\Core\Cache\CacheManager', 'getCache' ]
+    arguments: [ 'prometheus_storage' ]
     tags:
-      -
-        name: event.listener
-        identifier: aus/metrics-exporter/alter-table-definition-statements-event-listener
-        event: TYPO3\CMS\Core\Database\Event\AlterTableDefinitionStatementsEvent
+      - { name: cache, identifier: 'prometheus_storage', immutable: true }
