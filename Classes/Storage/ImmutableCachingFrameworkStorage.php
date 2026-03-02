@@ -513,7 +513,6 @@ class ImmutableCachingFrameworkStorage implements Adapter
     {
         $result = $this->cacheStorage->get($this->cacheKey($type));
 
-
         if ($result !== false && !is_array($result)) {
             throw new RuntimeException('Cache returned invalid data', 7975787690);
         }
@@ -526,7 +525,7 @@ class ImmutableCachingFrameworkStorage implements Adapter
      */
     protected function push(string $type, array $data): void
     {
-        $this->cacheStorage->set($this->cacheKey($type), $data, lifetime: 30);
+        $this->cacheStorage->set($this->cacheKey($type), $data, lifetime: 0);
     }
 
     protected function cacheKey(string $type): string

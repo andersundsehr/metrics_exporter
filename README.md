@@ -66,6 +66,72 @@ routeEnhancers:
 
 3. Database configuration if wanted, see below.
 
+# Events
+
+## BeforeMetricsRenderEvent
+
+Dispatched **before** the metrics are rendered. Use it to register and set additional metrics on the fly.
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace MyVendor\MyExtension\EventListener;
+
+use AUS\MetricsExporter\Event\BeforeMetricsRenderEvent;
+
+class MyMetricsListener
+{
+    public function __invoke(BeforeMetricsRenderEvent $event): void
+    {
+        $registry = $event->getRegistry();
+        $gauge = $registry->getOrRegisterGauge('my_prefix', 'my_metric', 'My description');
+        $gauge->set(42);
+    }
+}
+```
+
+Register the listener in your `Configuration/Services.yaml`:
+
+```yaml
+MyVendor\MyExtension\EventListener\MyMetricsListener:
+  tags:
+    - name: event.listener
+      event: AUS\MetricsExporter\Event\BeforeMetricsRenderEvent
+```
+
+## WriteStreamEvent
+
+Dispatched **after** the metrics are rendered, with the response stream. Use it to append extra plain-text content to the metrics output.
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace MyVendor\MyExtension\EventListener;
+
+use AUS\MetricsExporter\Event\WriteStreamEvent;
+
+class MyStreamListener
+{
+    public function __invoke(WriteStreamEvent $event): void
+    {
+        $event->write('# Extra info appended to the metrics output');
+    }
+}
+```
+
+Register the listener in your `Configuration/Services.yaml`:
+
+```yaml
+MyVendor\MyExtension\EventListener\MyStreamListener:
+  tags:
+    - name: event.listener
+      event: AUS\MetricsExporter\Event\WriteStreamEvent
+```
+
 # Visibility
 
 Remember that metrics may contain sensitive data and should be protected from public access.

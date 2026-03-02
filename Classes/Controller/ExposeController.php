@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AUS\MetricsExporter\Controller;
 
 use AUS\MetricsExporter\Event\BeforeMetricsRenderEvent;
+use AUS\MetricsExporter\Event\WriteStreamEvent;
 use AUS\MetricsExporter\Service\CollectorService;
 use Prometheus\RenderTextFormat;
 use Throwable;
@@ -31,9 +32,10 @@ class ExposeController extends ActionController
         $registry = $this->collectorService->getRegistry();
 
         $this->eventDispatcher->dispatch($this->beforeMetricsRenderEvent);
-        $result = $renderer->render($registry->getMetricFamilySamples());
+        $result = $renderer->render($registry->getMetricFamilySamples(false));
 
         $stream = GeneralUtility::makeInstance(StreamFactory::class)->createStream($result);
+        $this->eventDispatcher->dispatch(new WriteStreamEvent($stream));
         return (new Response())->withBody($stream)->withHeader('Content-Type', RenderTextFormat::MIME_TYPE)->withHeader('Content-Disposition', 'inline');
     }
 }
