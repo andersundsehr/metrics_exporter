@@ -1,0 +1,11 @@
+# cat=basic/enable; type=boolean; label=Enable PHP FPM Exporter
+enableFpmExporter = 0
+
+# cat=basic/enable; type=boolean; label=Enable Scrape Proxy
+enableExporterProxyExporter = 0
+
+# cat=basic/enable; type=string; label=Comma-separated list of URLs to scrape
+exporterProxyExporterUrls =
+
+# cat=basic/enable; type=string; label=Comma-separated list of CIDR allowed to access metrics endpoint
+allowedCidrs =

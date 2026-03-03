@@ -16,3 +16,15 @@ services:
     arguments: [ 'prometheus_storage' ]
     tags:
       - { name: cache, identifier: 'prometheus_storage', immutable: true }
+
+  AUS\MetricsExporter\EventListener\PrometheusExporterProxyEventListener:
+    tags:
+      - name: event.listener
+        identifier: 'aus-metrics/prometheus-exporter-proxy'
+        event: AUS\MetricsExporter\Event\WriteStreamEvent
+
+  AUS\MetricsExporter\EventListener\PrometheusFpmEventListener:
+    tags:
+      - name: event.listener
+        identifier: 'aus-metrics/prometheus-fpm'
+        event: AUS\MetricsExporter\Event\WriteStreamEvent
