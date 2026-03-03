@@ -58,6 +58,7 @@ class SecurityService
                 return true;
             }
         }
+
         return false;
     }
 }
