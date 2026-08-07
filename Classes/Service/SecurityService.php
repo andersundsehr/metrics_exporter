@@ -20,6 +20,10 @@ class SecurityService
         if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
             $ipLong = ip2long($ip);
             $subnetLong = ip2long($subnet);
+            if ($ipLong === false || $subnetLong === false || $bits < 0 || $bits > 32) {
+                return false;
+            }
+
             $mask = -1 << (32 - $bits);
 
             return ($ipLong & $mask) === ($subnetLong & $mask);
@@ -30,7 +34,7 @@ class SecurityService
             $ipBin = inet_pton($ip);
             $subnetBin = inet_pton($subnet);
 
-            if ($ipBin === false || $subnetBin === false) {
+            if ($ipBin === false || $subnetBin === false || $bits < 0 || $bits > 128) {
                 return false;
             }
 
