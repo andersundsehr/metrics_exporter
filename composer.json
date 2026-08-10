@@ -13,7 +13,7 @@
     "saschaegerer/phpstan-typo3": "*",
     "ssch/typo3-rector": "^2.5.0",
     "typo3/testing-framework": "*",
-    "weakbit/fallback-cache": "dev-feature/TYPO3v13"
+    "weakbit/fallback-cache": "^1.1.0"
   },
   "suggest": {
     "weakbit/fallback-cache": "Ensures metrics collector doesn't break pages if caching fails and enables immutable caching for metrics"

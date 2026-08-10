@@ -7,8 +7,10 @@ namespace AUS\MetricsExporter\Controller;
 use AUS\MetricsExporter\Event\BeforeMetricsRenderEvent;
 use AUS\MetricsExporter\Event\WriteStreamEvent;
 use AUS\MetricsExporter\Service\CollectorService;
+use AUS\MetricsExporter\Service\SecurityService;
 use Prometheus\RenderTextFormat;
 use Throwable;
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Http\StreamFactory;
 use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -18,7 +20,9 @@ class ExposeController extends ActionController
 {
     public function __construct(
         private readonly CollectorService $collectorService,
-        private readonly BeforeMetricsRenderEvent $beforeMetricsRenderEvent
+        private readonly BeforeMetricsRenderEvent $beforeMetricsRenderEvent,
+        private readonly SecurityService $securityService,
+        private readonly ExtensionConfiguration $extensionConfiguration,
     ) {
     }
 
@@ -28,6 +32,19 @@ class ExposeController extends ActionController
      */
     public function listAction(): Response
     {
+        $configuration = $this->extensionConfiguration->get('metrics_exporter');
+        assert(is_array($configuration));
+        $cidrs = $configuration['allowedCidrs'] ?? '';
+        assert(is_string($cidrs));
+        $cidrs = GeneralUtility::trimExplode(',', $cidrs, true);
+
+        $ip = GeneralUtility::getIndpEnv('REMOTE_ADDR');
+        if ($cidrs && (!$ip || !is_string($ip) || !$this->securityService->isRequestAllowed($ip, $cidrs))) {
+            return (new Response())->withStatus(403)->withHeader('Content-Type', 'text/plain')
+                ->withBody(GeneralUtility::makeInstance(StreamFactory::class)
+                ->createStream('Forbidden'));
+        }
+
         $renderer = new RenderTextFormat();
         $registry = $this->collectorService->getRegistry();
 

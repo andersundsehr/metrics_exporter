@@ -2,6 +2,8 @@
 
 This extension provides a metrics collector for your TYPO3 application and exposes an endpoint that outputs the collected metrics in a format compatible with Prometheus. This allows you to monitor application performance and behavior using Prometheus or similar monitoring tools.
 
+It also provides a scrape proxy and PHP FPM status metrics out of the box. See extension settings.
+
 ## Code Example: Collecting Metrics
 
 Here's how to inject the `CollectorService` into your own class and collect metrics:

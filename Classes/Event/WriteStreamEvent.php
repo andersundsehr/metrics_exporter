@@ -9,7 +9,7 @@ use Psr\Http\Message\StreamInterface;
 class WriteStreamEvent
 {
     public function __construct(
-        private StreamInterface $stream
+        private readonly StreamInterface $stream
     ) {
     }
 
