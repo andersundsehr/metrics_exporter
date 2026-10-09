@@ -39,7 +39,7 @@ class ExposeController extends ActionController
         $cidrs = GeneralUtility::trimExplode(',', $cidrs, true);
 
         $ip = GeneralUtility::getIndpEnv('REMOTE_ADDR');
-        if ($cidrs && (!$ip || !is_string($ip) || !$this->securityService->isRequestAllowed($ip, $cidrs))) {
+        if ($cidrs && (!$ip || !$this->securityService->isRequestAllowed($ip, $cidrs))) {
             return (new Response())->withStatus(403)->withHeader('Content-Type', 'text/plain')
                 ->withBody(GeneralUtility::makeInstance(StreamFactory::class)
                 ->createStream('Forbidden'));
