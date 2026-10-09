@@ -22,17 +22,17 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
       - run: composer config lock true
+      - name: Configure TYPO3 ELTS when an authorized test license is available
+        if: (matrix.typo3 == '11' || matrix.typo3 == '12') && vars.TYPO3_ELTS_REPOSITORY_URL != ''
+        env:
+          TYPO3_ELTS_REPOSITORY_URL: ${{ vars.TYPO3_ELTS_REPOSITORY_URL }}
+        run: composer config --global repositories.typo3-elts composer "$TYPO3_ELTS_REPOSITORY_URL"
       - name: Install actual dependencies for this TYPO3 release
         run: |
           alias=0.22.99
           if [ "${{ matrix.typo3 }}" = "11" ]; then alias=0.18.99; fi
           composer require "enshrined/svg-sanitize:1.0.0 as $alias" --dev --no-update --sort-packages --no-interaction
           composer require "typo3/cms-core:^${{ matrix.typo3 }}" --sort-packages --no-scripts --no-interaction -W
-      - name: Configure TYPO3 ELTS when an authorized test license is available
-        if: (matrix.typo3 == '11' || matrix.typo3 == '12') && vars.TYPO3_ELTS_REPOSITORY_URL != ''
-        env:
-          TYPO3_ELTS_REPOSITORY_URL: ${{ vars.TYPO3_ELTS_REPOSITORY_URL }}
-        run: composer config --global repositories.typo3-elts composer "$TYPO3_ELTS_REPOSITORY_URL"
       - run: composer validate --strict --no-check-publish
       - run: composer check-platform-reqs
       - run: composer audit --abandoned=report
