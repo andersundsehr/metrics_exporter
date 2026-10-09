@@ -17,7 +17,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class PrometheusExporterProxyEventListener extends AbstractEventListener
 {
     /** Timeout in seconds for connection + reading */
-    private const int TIMEOUT_SECONDS = 2;
+    private const TIMEOUT_SECONDS = 2;
 
     public function __invoke(WriteStreamEvent $event): void
     {
@@ -80,7 +80,12 @@ class PrometheusExporterProxyEventListener extends AbstractEventListener
         }
 
         // Verify we actually received a 200 response
-        $responseHeaders = $http_response_header;
+        if (function_exists('http_get_last_response_headers')) {
+            $http_response_header = http_get_last_response_headers();
+        }
+
+        /** @var list<string> $responseHeaders */
+        $responseHeaders = $http_response_header ?? [];
         foreach ($responseHeaders as $header) {
             if (str_starts_with($header, 'HTTP/')) {
                 if (!str_contains($header, ' 200 ')) {
