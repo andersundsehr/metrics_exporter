@@ -83,6 +83,7 @@ class PrometheusExporterProxyEventListener extends AbstractEventListener
         if (function_exists('http_get_last_response_headers')) {
             $http_response_header = http_get_last_response_headers();
         }
+        /** @var list<string> $responseHeaders */
         $responseHeaders = $http_response_header ?? [];
         foreach ($responseHeaders as $header) {
             if (str_starts_with($header, 'HTTP/')) {

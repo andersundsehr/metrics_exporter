@@ -37,7 +37,19 @@ jobs:
       - run: composer check-platform-reqs
       - run: composer audit --abandoned=report
       - run: bash tests/typo3-svg-sanitizer.sh
-      - run: ./vendor/bin/grumphp run --no-interaction
+      - name: Run static checks
+        run: ./vendor/bin/grumphp run --no-interaction --no-ansi 2>&1 | tee /tmp/metrics-static-checks.log
+      - name: Report static check failures
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          log = Path('/tmp/metrics-static-checks.log')
+          if log.exists():
+              message = log.read_text(errors='replace')[-5000:]
+              message = message.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+              print('::error::' + message)
+          PY
       - run: composer test
         env:
           typo3DatabaseDriver: pdo_sqlite
