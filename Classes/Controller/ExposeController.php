@@ -41,6 +41,7 @@ class ExposeController extends ActionController
         $ip = GeneralUtility::getIndpEnv('REMOTE_ADDR');
         if ($cidrs && (!$ip || !is_string($ip) || !$this->securityService->isRequestAllowed($ip, $cidrs))) {
             return (new Response())->withStatus(403)->withHeader('Content-Type', 'text/plain')
+                ->withHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
                 ->withBody(GeneralUtility::makeInstance(StreamFactory::class)
                 ->createStream('Forbidden'));
         }
@@ -53,6 +54,9 @@ class ExposeController extends ActionController
 
         $stream = GeneralUtility::makeInstance(StreamFactory::class)->createStream($result);
         $this->eventDispatcher->dispatch(new WriteStreamEvent($stream));
-        return (new Response())->withBody($stream)->withHeader('Content-Type', RenderTextFormat::MIME_TYPE)->withHeader('Content-Disposition', 'inline');
+        return (new Response())->withBody($stream)
+            ->withHeader('Content-Type', RenderTextFormat::MIME_TYPE)
+            ->withHeader('Content-Disposition', 'inline')
+            ->withHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
     }
 }
