@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use AUS\MetricsExporter\Controller\ExposeController;
 use TYPO3\CMS\Core\Cache\Backend\Typo3DatabaseBackend;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
@@ -25,8 +27,10 @@ call_user_func(
             '@import "EXT:metrics_exporter/Configuration/TypoScript/setup.typoscript"'
         );
 
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['prometheus_storage'] ??= [];
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['prometheus_storage']['backend']
+        /** @var array{SYS: array{caching: array{cacheConfigurations: array<string, array<string, mixed>>}}} $configuration */
+        $configuration = &$GLOBALS['TYPO3_CONF_VARS'];
+        $configuration['SYS']['caching']['cacheConfigurations']['prometheus_storage'] ??= [];
+        $configuration['SYS']['caching']['cacheConfigurations']['prometheus_storage']['backend']
             ??= Typo3DatabaseBackend::class;
     }
 );
