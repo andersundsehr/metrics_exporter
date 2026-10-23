@@ -9,6 +9,7 @@ use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Ssch\TYPO3Rector\TYPO311\v0\DateTimeAspectInsteadOfGlobalsExecTimeRector;
 
 return static function (RectorConfig $rectorConfig): void {
+    $rectorConfig->phpVersion(80100);
     $rectorConfig->parallel();
     $rectorConfig->importNames();
     $rectorConfig->importShortClasses();
