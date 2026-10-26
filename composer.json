@@ -46,11 +46,6 @@
     }
   },
   "scripts": {
-    "test": [
-      "@test:unit",
-      "@test:functional"
-    ],
-    "test:functional": "@php ./vendor/bin/phpunit --color=always --testdox --stderr --display-deprecations --display-notices --display-warnings --bootstrap FunctionalTestsBootstrap.php Tests/Functional/",
-    "test:unit": "@php ./vendor/bin/phpunit --bootstrap vendor/autoload.php Tests/Unit/"
+    "test": "@php ./vendor/bin/phpunit --color=always --testdox --stderr --display-deprecations --display-notices --display-warnings --bootstrap FunctionalTestsBootstrap.php Tests/Functional/"
   }
 }
