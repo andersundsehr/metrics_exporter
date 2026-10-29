@@ -32,8 +32,7 @@ jobs:
           extensions: apcu, bcmath, gd, intl, mbstring, pdo_sqlite, sqlite3, zip
           coverage: pcov
           ini-values: apc.enable_cli=1, memory_limit=1G
-      - run: composer require typo3/minimal="^${{ matrix.typo3 }}.4" --dev --no-update --no-interaction
-      - run: composer update --with-all-dependencies --no-interaction --no-progress ${{ matrix.composer_flags }}
+      - run: composer require typo3/minimal="^${{ matrix.typo3 }}.4" --dev --with-all-dependencies --no-interaction --no-progress ${{ matrix.composer_flags }}
       - run: ./vendor/bin/grumphp run --ansi
       - run: composer test
         env:
