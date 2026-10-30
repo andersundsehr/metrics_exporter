@@ -9,7 +9,7 @@ use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 abstract class AbstractEventListener
 {
     /**
-     * @var array<string, mixed>
+     * @var array<array-key, mixed>
      */
     protected array $config;
 

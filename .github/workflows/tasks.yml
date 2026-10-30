@@ -1,0 +1,33 @@
+name: Tasks
+
+on: [push, pull_request]
+
+jobs:
+  lint-php:
+    name: "php: ${{ matrix.php }} TYPO3: ${{ matrix.typo3 }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.2'
+            typo3: '13'
+          - php: '8.3'
+            typo3: '13'
+          - php: '8.4'
+            typo3: '13'
+          - php: '8.5'
+            typo3: '13'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: apcu, bcmath, gd, intl, mbstring, pdo_sqlite, sqlite3, zip
+          coverage: pcov
+          ini-values: apc.enable_cli=1, memory_limit=1G
+      - run: composer require typo3/minimal="^${{ matrix.typo3 }}.4" --dev --with-all-dependencies --no-interaction --no-progress
+      - run: ./vendor/bin/grumphp run --ansi
+      - run: composer test
+        env:
+          typo3DatabaseDriver: pdo_sqlite

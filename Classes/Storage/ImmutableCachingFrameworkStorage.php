@@ -18,10 +18,18 @@ use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 
+/**
+ * @phpstan-type Metadata array{name: string, help: string, type: string, labelNames: array<string>, buckets?: array<int|float>, maxAgeSeconds?: int, quantiles?: array<float>}
+ * @phpstan-type MetricData array{name: string, help: string, type: string, labelNames: array<string>, labelValues: array<string|int|float>, value: int|float, command?: int, buckets?: array<int|float>, maxAgeSeconds?: int, quantiles?: array<float>}
+ * @phpstan-type Sample int|float|array<array{time: int, value: float}>
+ * @phpstan-type StoredMetric array{meta: Metadata, samples: array<string, Sample>}
+ */
 class ImmutableCachingFrameworkStorage implements Adapter
 {
+    /** @var string */
     protected const CACHE_KEY_PREFIX = 'PROMETHEUS_';
 
+    /** @var string */
     protected const CACHE_KEY_SUFFIX = '_METRICS';
 
     public function __construct(
@@ -54,7 +62,7 @@ class ImmutableCachingFrameworkStorage implements Adapter
     }
 
     /**
-     * @param array<string, array{meta: array<string, mixed>, samples: array<string, mixed>}> $histograms
+     * @param array<string, StoredMetric> $histograms
      * @return array<MetricFamilySamples>
      * @throws JsonException
      */
@@ -63,6 +71,7 @@ class ImmutableCachingFrameworkStorage implements Adapter
         $output = [];
         foreach ($histograms as $histogram) {
             $metaData = $histogram['meta'];
+            assert(isset($metaData['buckets']));
             $data = [
                 'name' => $metaData['name'],
                 'help' => $metaData['help'],
@@ -72,11 +81,11 @@ class ImmutableCachingFrameworkStorage implements Adapter
             ];
 
             // Add the Inf bucket so we can compute it later on
-            assert(is_array($data['buckets']));
             $data['buckets'][] = '+Inf';
 
             $histogramBuckets = [];
             foreach ($histogram['samples'] as $key => $value) {
+                assert(is_int($value) || is_float($value));
                 $parts = explode(':', $key);
                 $labelValues = $parts[2];
                 $bucket = $parts[3];
@@ -140,8 +149,8 @@ class ImmutableCachingFrameworkStorage implements Adapter
     }
 
     /**
-     * @param array<string, array{meta: array<string, mixed>, samples: array<string, mixed>}> $summaries
- * @return array<MetricFamilySamples>
+     * @param array<string, StoredMetric> $summaries
+     * @return array<MetricFamilySamples>
      * @throws JsonException
      */
     protected function collectSummaries(array $summaries): array
@@ -150,6 +159,7 @@ class ImmutableCachingFrameworkStorage implements Adapter
         $output = [];
         foreach ($summaries as &$summary) {
             $metaData = $summary['meta'];
+            assert(isset($metaData['maxAgeSeconds'], $metaData['quantiles']));
             $data = [
                 'name' => $metaData['name'],
                 'help' => $metaData['help'],
@@ -181,7 +191,6 @@ class ImmutableCachingFrameworkStorage implements Adapter
                 // Compute quantiles
                 usort($values, static fn(array $value1, array $value2): int => $value1['value'] <=> $value2['value']);
 
-                assert(is_array($data['quantiles']));
                 foreach ($data['quantiles'] as $quantile) {
                     $data['samples'][] = [
                         'name' => $metaData['name'],
@@ -223,7 +232,7 @@ class ImmutableCachingFrameworkStorage implements Adapter
     }
 
     /**
-     * @param array<string, array{meta: array<string, mixed>, samples: array<string, mixed>}> $metrics
+     * @param array<string, StoredMetric> $metrics
      * @return array<MetricFamilySamples>
      * @throws JsonException
      */
@@ -242,6 +251,7 @@ class ImmutableCachingFrameworkStorage implements Adapter
                 'samples' => [],
             ];
             foreach ($metric['samples'] as $key => $value) {
+                assert(is_int($value) || is_float($value));
                 $parts = explode(':', $key);
                 $labelValues = $parts[2];
                 $data['samples'][] = [
@@ -263,12 +273,13 @@ class ImmutableCachingFrameworkStorage implements Adapter
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param MetricData $data
      * @throws JsonException
      * @throws JsonException
      */
     public function updateHistogram(array $data): void
     {
+        assert(isset($data['buckets']));
         $histograms = $this->fetch(Histogram::TYPE);
 
         // Initialize the sum
@@ -285,11 +296,11 @@ class ImmutableCachingFrameworkStorage implements Adapter
             $histograms[$metaKey]['samples'][$sumKey] = 0;
         }
 
+        assert(is_int($histograms[$metaKey]['samples'][$sumKey]) || is_float($histograms[$metaKey]['samples'][$sumKey]));
         $histograms[$metaKey]['samples'][$sumKey] += $data['value'];
 
 
         $bucketToIncrease = '+Inf';
-        assert(is_array($data['buckets']));
         foreach ($data['buckets'] as $bucket) {
             if ($data['value'] <= $bucket) {
                 $bucketToIncrease = $bucket;
@@ -305,13 +316,14 @@ class ImmutableCachingFrameworkStorage implements Adapter
             $histograms[$metaKey]['samples'][$bucketKey] = 0;
         }
 
+        assert(is_int($histograms[$metaKey]['samples'][$bucketKey]) || is_float($histograms[$metaKey]['samples'][$bucketKey]));
         $histograms[$metaKey]['samples'][$bucketKey] += 1;
 
         $this->push(Histogram::TYPE, $histograms);
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param MetricData $data
      * @throws JsonException
      * @throws JsonException
      */
@@ -345,11 +357,12 @@ class ImmutableCachingFrameworkStorage implements Adapter
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param MetricData $data
      * @throws JsonException
      */
     public function updateGauge(array $data): void
     {
+        assert(isset($data['command']));
         $gauges = $this->fetch(Gauge::TYPE);
 
         $metaKey = $this->metaKey($data);
@@ -371,6 +384,7 @@ class ImmutableCachingFrameworkStorage implements Adapter
         if ($data['command'] === Adapter::COMMAND_SET) {
             $gauges[$metaKey]['samples'][$valueKey] = $data['value'];
         } else {
+            assert(is_int($gauges[$metaKey]['samples'][$valueKey]) || is_float($gauges[$metaKey]['samples'][$valueKey]));
             $gauges[$metaKey]['samples'][$valueKey] += $data['value'];
         }
 
@@ -378,12 +392,13 @@ class ImmutableCachingFrameworkStorage implements Adapter
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param MetricData $data
      * @throws JsonException
      * @throws JsonException
      */
     public function updateCounter(array $data): void
     {
+        assert(isset($data['command']));
         $counters = $this->fetch(Counter::TYPE);
 
         $metaKey = $this->metaKey($data);
@@ -405,6 +420,7 @@ class ImmutableCachingFrameworkStorage implements Adapter
         if ($data['command'] === Adapter::COMMAND_SET) {
             $counters[$metaKey]['samples'][$valueKey] = 0;
         } else {
+            assert(is_int($counters[$metaKey]['samples'][$valueKey]) || is_float($counters[$metaKey]['samples'][$valueKey]));
             $counters[$metaKey]['samples'][$valueKey] += $data['value'];
         }
 
@@ -412,12 +428,11 @@ class ImmutableCachingFrameworkStorage implements Adapter
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param MetricData $data
      * @throws JsonException
      */
     protected function histogramBucketValueKey(array $data, string|float|int $bucket): string
     {
-        assert(is_array($data['labelValues']));
         return implode(':', [
             $data['type'],
             $data['name'],
@@ -427,7 +442,7 @@ class ImmutableCachingFrameworkStorage implements Adapter
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param MetricData $data
      */
     protected function metaKey(array $data): string
     {
@@ -439,12 +454,11 @@ class ImmutableCachingFrameworkStorage implements Adapter
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param MetricData $data
      * @throws JsonException
      */
     protected function valueKey(array $data): string
     {
-        assert(is_array($data['labelValues']));
         return implode(':', [
             $data['type'],
             $data['name'],
@@ -454,8 +468,8 @@ class ImmutableCachingFrameworkStorage implements Adapter
     }
 
     /**
-     * @param array<string, mixed> $data
-     * @return array<string, mixed>
+     * @param MetricData $data
+     * @return Metadata
      */
     protected function metaData(array $data): array
     {
@@ -465,11 +479,11 @@ class ImmutableCachingFrameworkStorage implements Adapter
     }
 
     /**
-     * @param array<array{name: string, labelNames: array<string>, labelValues: array<string>, value: float|int}> &$samples
+     * @param array<array{name: string, labelNames: array<string>, labelValues: array<string|int|float>, value: float|int}> &$samples
      */
     protected function sortSamples(array &$samples): void
     {
-        usort($samples, static fn($a, $b): int => strcmp(
+        usort($samples, static fn(array $a, array $b): int => strcmp(
             implode("", $a['labelValues']),
             implode("", $b['labelValues'])
         ));
@@ -498,16 +512,24 @@ class ImmutableCachingFrameworkStorage implements Adapter
 
         $return = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
 
-        // check if $return is an array only containing string|int|float values
-        if (!is_array($return) || array_filter($return, static fn($v): bool => !is_string($v) && !is_int($v) && !is_float($v))) {
+        if (!is_array($return)) {
             throw new RuntimeException('Cannot decode label values', 7975787689);
         }
 
-        return $return;
+        $labels = [];
+        foreach ($return as $key => $value) {
+            if (!is_string($value) && !is_int($value) && !is_float($value)) {
+                throw new RuntimeException('Cannot decode label values', 7975787689);
+            }
+
+            $labels[$key] = $value;
+        }
+
+        return $labels;
     }
 
     /**
-     * @return array<string, array{meta: array<string, mixed>, samples: array<string, mixed>}>
+     * @return array<string, StoredMetric>
      */
     protected function fetch(string $type): array
     {
@@ -517,11 +539,13 @@ class ImmutableCachingFrameworkStorage implements Adapter
             throw new RuntimeException('Cache returned invalid data', 7975787690);
         }
 
-        return $result !== false ? $result : [];
+        /** @var array<string, StoredMetric> $metrics */
+        $metrics = $result !== false ? $result : [];
+        return $metrics;
     }
 
     /**
-     * @param array<string, array{meta: array<string, mixed>, samples: array<string, mixed>}> $data
+     * @param array<string, StoredMetric> $data
      */
     protected function push(string $type, array $data): void
     {

@@ -39,7 +39,7 @@ class ExposeController extends ActionController
         $cidrs = GeneralUtility::trimExplode(',', $cidrs, true);
 
         $ip = GeneralUtility::getIndpEnv('REMOTE_ADDR');
-        if ($cidrs && (!$ip || !is_string($ip) || !$this->securityService->isRequestAllowed($ip, $cidrs))) {
+        if ($cidrs && (!$ip || !$this->securityService->isRequestAllowed($ip, $cidrs))) {
             return (new Response())->withStatus(403)->withHeader('Content-Type', 'text/plain')
                 ->withHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
                 ->withBody(GeneralUtility::makeInstance(StreamFactory::class)

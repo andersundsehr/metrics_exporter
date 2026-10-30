@@ -4,16 +4,16 @@
   "license": "GPL-3.0-or-later",
   "type": "typo3-cms-extension",
   "require": {
-    "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
+    "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
     "promphp/prometheus_client_php": "^2.14.1",
-    "typo3/cms-core": "^11.5 || ^12.4 || ^13.4"
+    "typo3/cms-core": "^13.4"
   },
   "require-dev": {
-    "pluswerk/grumphp-config": "*",
+    "pluswerk/grumphp-config": "^11.2.0",
     "saschaegerer/phpstan-typo3": "*",
-    "ssch/typo3-rector": "^2.5.0",
+    "ssch/typo3-rector": "^3.16.0",
     "typo3/testing-framework": "*",
-    "weakbit/fallback-cache": "^1.1.0"
+    "weakbit/fallback-cache": "^1.1.0 || ^2.0.1"
   },
   "suggest": {
     "weakbit/fallback-cache": "Ensures metrics collector doesn't break pages if caching fails and enables immutable caching for metrics"
@@ -30,6 +30,7 @@
   },
   "config": {
     "allow-plugins": {
+      "a9f/fractor-extension-installer": true,
       "ergebnis/composer-normalize": true,
       "phpro/grumphp": true,
       "phpstan/extension-installer": true,
@@ -37,7 +38,8 @@
       "typo3/class-alias-loader": true,
       "typo3/cms-composer-installers": true
     },
-    "lock": false
+    "lock": true,
+    "sort-packages": true
   },
   "extra": {
     "typo3/cms": {
