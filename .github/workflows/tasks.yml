@@ -24,10 +24,6 @@ jobs:
       # --ignore-platform-req=php+ may only skip the PHP check of dev dependencies (e.g. phpro/grumphp)
       - if: matrix.php == '8.6'
         run: composer check-platform-reqs --no-dev
-      # TEMPORARY: print a PHPStan baseline of the existing code, removed again in the next commit
-      - run: |
-          ./vendor/bin/phpstan analyse --generate-baseline=phpstan-baseline.neon --allow-empty-baseline --no-progress --memory-limit=-1 || true
-          echo '-----BASELINE-START-----'; cat phpstan-baseline.neon; echo '-----BASELINE-END-----'
       - run: ./vendor/bin/grumphp run --ansi
       - run: composer test
         env:
