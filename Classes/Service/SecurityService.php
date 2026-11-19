@@ -41,7 +41,7 @@ class SecurityService
             $mask = str_repeat("\xff", (int)($bits / 8));
             $remaining = $bits % 8;
             if ($remaining > 0) {
-                $mask .= chr(0xff << (8 - $remaining));
+                $mask .= chr((0xff << (8 - $remaining)) & 0xff);
             }
 
             $mask = str_pad($mask, 16, "\x00");
