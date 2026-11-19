@@ -20,9 +20,6 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: apcu, bcmath, gd, intl, mbstring, pdo_sqlite, sqlite3, zip
-          coverage: pcov
-          ini-values: apc.enable_cli=1, memory_limit=1G
       - run: composer require typo3/minimal="^${{ matrix.typo3 }}.4" --dev --with-all-dependencies --no-interaction --no-progress ${{ matrix.ignorePlatformReqs }}
       # --ignore-platform-req=php+ may only skip the PHP check of dev dependencies (e.g. phpro/grumphp)
       - if: matrix.php == '8.6'

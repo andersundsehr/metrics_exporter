@@ -9,7 +9,7 @@
     "typo3/cms-core": "^13.4"
   },
   "require-dev": {
-    "pluswerk/grumphp-config": "^11.2.0",
+    "pluswerk/grumphp-config": "*",
     "saschaegerer/phpstan-typo3": "*",
     "ssch/typo3-rector": "^3.16.0",
     "typo3/testing-framework": "*",
@@ -38,7 +38,7 @@
       "typo3/class-alias-loader": true,
       "typo3/cms-composer-installers": true
     },
-    "lock": true,
+    "lock": false,
     "sort-packages": true
   },
   "extra": {
