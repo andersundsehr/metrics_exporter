@@ -69,7 +69,6 @@ class PrometheusExporterProxyEventListener extends AbstractEventListener
             return true; // suppress PHP warnings from file_get_contents
         });
 
-        $http_response_header = [];
         try {
             $content = file_get_contents($url, false, $context);
         } finally {
@@ -81,13 +80,7 @@ class PrometheusExporterProxyEventListener extends AbstractEventListener
         }
 
         // Verify we actually received a 200 response
-        if (function_exists('http_get_last_response_headers')) {
-            $responseHeaders = http_get_last_response_headers() ?? [];
-        } else {
-            $responseHeaders = $http_response_header;
-        }
-
-        /** @var list<string> $responseHeaders */
+        $responseHeaders = $http_response_header;
         foreach ($responseHeaders as $header) {
             if (str_starts_with($header, 'HTTP/')) {
                 if (!str_contains($header, ' 200 ')) {
