@@ -17,7 +17,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class PrometheusExporterProxyEventListener extends AbstractEventListener
 {
     /** Timeout in seconds for connection + reading */
-    private const TIMEOUT_SECONDS = 2;
+    private const int TIMEOUT_SECONDS = 2;
 
     public function __invoke(WriteStreamEvent $event): void
     {
