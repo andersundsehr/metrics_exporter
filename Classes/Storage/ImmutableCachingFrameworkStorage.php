@@ -469,7 +469,7 @@ class ImmutableCachingFrameworkStorage implements Adapter
      */
     protected function sortSamples(array &$samples): void
     {
-        usort($samples, static fn($a, $b): int => strcmp(
+        usort($samples, static fn(array $a, array $b): int => strcmp(
             implode("", $a['labelValues']),
             implode("", $b['labelValues'])
         ));
